@@ -1,0 +1,60 @@
+/**
+ * 
+ */
+package com.maria.api.controller;
+
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.maria.api.impl.service.MessageService;
+import com.maria.api.model.Message;
+
+import io.reactivex.Observable;
+
+/**
+ * @author Maria
+ *
+ */
+
+@RestController
+public class MensajeController {
+	
+	@Autowired
+	private MessageService changeService;
+
+	@GetMapping("/changes")
+	public ResponseEntity<List<Message>> getAllMessage(){
+		return ResponseEntity.ok().body(changeService.getAllMessage());
+	}
+
+	@GetMapping("/changes/{id}")
+	public ResponseEntity<Observable<Message>> getAllMessageById(@PathVariable long id){
+		return ResponseEntity.ok().body(changeService.getMessageById(id));
+	}
+
+	@PostMapping("/changes")
+	public ResponseEntity<List<Message>> registerMessage(@RequestBody List<Message> changes){
+		return ResponseEntity.ok().body(this.changeService.registerMessage(changes));
+	}
+
+	@PutMapping("/changes/{id}")
+	public ResponseEntity<Observable<Message>> updateMessage(@PathVariable long id, @RequestBody Message change){
+		change.setId(id);
+		return ResponseEntity.ok().body(this.changeService.updateMessage(change));
+	}
+
+	@DeleteMapping("/changes/{id}")
+	public Observable<String> deleteMessage(@PathVariable long id){
+		Observable<String> message = this.changeService.deleteMessage(id);
+		return message;
+	}
+}

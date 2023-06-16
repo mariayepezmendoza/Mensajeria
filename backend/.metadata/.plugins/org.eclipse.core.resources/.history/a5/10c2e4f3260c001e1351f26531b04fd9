@@ -1,0 +1,160 @@
+/**
+ * 
+ */
+package com.maria.api.impl.service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import javax.transaction.Transactional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.maria.api.exception.ResourceNotFoundException;
+import com.maria.api.model.Mensaje;
+import com.maria.api.model.Terminal;
+import com.maria.api.repository.IMensajeRepository;
+import com.maria.api.repository.IRelationRepository;
+
+import io.reactivex.Observable;
+
+/**
+ * @author Maria
+ *
+ */
+
+@Service
+@Transactional
+public class MensajeServiceImpl implements MensajeService{
+
+	private static final Logger Log = LoggerFactory.getLogger(MensajeServiceImpl.class);
+
+	@Autowired
+	private IMensajeRepository changeRepository;
+
+	@Autowired
+	private IRelationRepository relationRepository ;
+
+	@Override
+	public List<Mensaje> registerMessage(List<Mensaje> mensajes) {
+		for(Mensaje mensaje : mensajes) {
+			Terminal terminal = verifyRelation(mensaje);
+			mensaje.setTerminal(terminal);
+
+			Observable<Mensaje> source = Observable.just(changeRepository.save(mensaje));
+			source.subscribe(s -> Log.info(Constants.STR_RELATION + s.toString()));
+
+		}
+		return mensaje;
+	}
+
+	@Override
+	public Observable<Mensaje> updateMensaje(Mensaje mensaje) {
+		Optional<Mensaje> changeDb = this.changeRepository.findById(mensaje.getId());
+	
+		if(changeDb.isPresent()) {
+			Mensaje changeForUpdate = changeDb.get();
+			setValues(mensaje, changeForUpdate);
+			
+			Observable<Mensaje> source = Observable.just(changeForUpdate);
+			source.subscribe(s -> Log.info(Constants.STR_RELATION + s.toString()));
+			return source;
+		}else {
+			throw new ResourceNotFoundException(Constants.STR_ERROR_ID + mensaje.getId());
+		}
+	}
+
+	@Override
+	public List<Mensaje> getAllMensaje() {
+		List<Mensaje> list = new ArrayList<Mensaje>(changeRepository.findAll());
+		Observable<Mensaje> source = Observable.fromIterable(list);
+		source.subscribe(s -> Log.info(Constants.STR_RELATION + s.toString()));
+		return list;
+	}
+
+	@Override
+	public Observable<Mensaje> getMensajeById(long changeId) {
+		Optional<Mensaje> changeDb = this.changeRepository.findById(changeId);
+
+		if(changeDb.isPresent()) {
+			Observable<Mensaje> source = Observable.just(changeDb.get());
+			source.subscribe(s -> Log.info(Constants.STR_RELATION + s.toString()));
+			return source;
+		}else {
+			throw new ResourceNotFoundException(Constants.STR_ERROR_ID + changeId);
+		}
+	}
+
+	@Override
+	public Observable<String> deleteMensaje(long changeId) {
+		Optional<Mensaje> changeDb = this.changeRepository.findById(changeId);
+		Observable<String> message = null;
+		try {
+			if(changeDb.isPresent()) {
+				this.changeRepository.delete(changeDb.get());
+				message = Observable.just(Constants.STR_DELETE_OK);
+				message.subscribe(s -> Log.info(Constants.STR_DELETE_OK));
+			}else {
+				message = Observable.just(Constants.STR_DELETE_ERROR);
+				throw new ResourceNotFoundException(Constants.STR_ERROR_ID + changeId);
+			}
+		} catch (Exception e) {
+			message = Observable.just(Constants.STR_DELETE_ERROR);
+			throw new ResourceNotFoundException(Constants.STR_ERROR_ID + changeId);
+		}
+		
+		return message;
+	}
+
+	private Terminal verifyRTerminal(Mensaje mensaje) {
+		Optional<Terminal> relationDb = this.relationRepository.getTerminalByCode(
+				mensaje.getTerminal().getCodigo());
+
+		Terminal relation = new Terminal();
+		if(relationDb.isPresent()) {
+			relation.setId(relationDb.get().getId());
+			relation.setCodigo(relationDb.get().getCodigo());
+			relation.setDescripcion(relationDb.get().getDescripcion());
+		}else {
+			throw new ResourceNotFoundException(Constants.STR_ERROR_CURRENCY +
+					mensaje.getTerminal().getCodigo());
+					
+		}
+
+		return relation;
+	}
+
+	private void setValues(Mensaje change, Mensaje changeForUpdate) {
+		Terminal relation = null;
+		if(change.getId() != null) {
+			changeForUpdate.setId(change.getId());
+		}
+
+		if(change.getMount() != null) {
+			changeForUpdate.setMount(change.getMount());
+		}
+
+		if(change.getRelation() != null &&
+			!change.getRelation().getOriginCurrency().equals("") &&
+			 !change.getRelation().getDestinationCurrency().equals("")) {
+			 relation = verifyRelation(change);
+			changeForUpdate.setRelation(relation);
+		}
+		
+		if(change.getMount() == null && relation != null) {
+			changeForUpdate.setNewMount(relation.getMensajeType().multiply(
+					changeForUpdate.getMount(), Constants.MATH_CONTEXT));
+		}else if(change.getMount() != null && relation == null){
+			changeForUpdate.setNewMount(change.getRelation().getMensajeType().multiply(
+					change.getMount(), Constants.MATH_CONTEXT));
+		}else{
+			Log.info(Constants.STR_ANY_ITEMS);
+		}
+		
+	}
+
+}

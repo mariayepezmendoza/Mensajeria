@@ -1,0 +1,27 @@
+/**
+ * 
+ */
+package com.maria.api.impl.service;
+
+import java.util.List;
+
+import com.maria.api.model.Mensaje;
+
+import io.reactivex.Observable;
+
+/**
+ * @author Maria
+ *
+ */
+public interface ChangeService {
+
+	List<Mensaje> createChange(List<Mensaje> change);
+
+	Observable<Mensaje> updateChange(Mensaje change);
+
+	List<Mensaje> getAllChange();
+
+	Observable<Mensaje> getChangeById(long changeId);
+
+	Observable<String> deleteChange(long changeId);
+}

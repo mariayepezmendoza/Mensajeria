@@ -1,0 +1,16 @@
+/**
+ * 
+ */
+package com.maria.api.queue.config;
+
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * @author Maria
+ *
+ */
+
+@Configuration
+public class JmsConfiguration {
+
+}

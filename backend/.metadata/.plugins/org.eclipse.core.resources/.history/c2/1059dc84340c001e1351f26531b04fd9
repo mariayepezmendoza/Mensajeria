@@ -1,0 +1,55 @@
+/**
+ * 
+ */
+package com.maria.api.queue.config;
+
+import javax.jms.ConnectionFactory;
+
+import org.apache.activemq.ActiveMQConnectionFactory;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.jms.annotation.EnableJms;
+import org.springframework.jms.connection.CachingConnectionFactory;
+import org.springframework.jms.core.JmsTemplate;
+import org.springframework.jms.listener.SimpleMessageListenerContainer;
+import org.springframework.jms.listener.adapter.MessageListenerAdapter;
+
+/**
+ * @author Maria
+ *
+ */
+
+@Configuration
+@EnableJms
+public class JmsConfiguration {
+	static String destino = "message.queue";
+	
+	@Bean
+	ConnectionFactory connectionFactory() {
+		return new CachingConnectionFactory(
+				new ActiveMQConnectionFactory("tcp://192.168.0.3:61616"));
+	}
+	
+	@Bean
+	MessageListenerAdapter receiver(SimpleListener simpleListener) {
+		return new MessageListenerAdapter(simpleListener) {{
+			setDefaultListenerMethod("receiveMessage");
+		}};
+	}
+	
+	@Bean
+	SimpleMessageListenerContainer container(
+			final MessageListenerAdapter messageListener,
+			final ConnectionFactory connectionFactory) {
+		return new SimpleMessageListenerContainer() {{
+			setMessageListener(messageListener);
+			setConnectionFactory(connectionFactory);
+			setDestinationName(destino);
+		}};
+	}
+	
+	@Bean
+	JmsTemplate jmsTemplate(ConnectionFactory connectionFactory) {
+		return new JmsTemplate(connectionFactory);
+	}
+}

@@ -1,0 +1,29 @@
+/**
+ * 
+ */
+package com.maria.api.impl.service;
+
+import java.util.List;
+
+import com.maria.api.model.Terminal;
+
+import io.reactivex.Observable;
+
+/**
+ * @author Maria
+ *
+ */
+public interface TerminalService {
+
+	List<Terminal> createTerminal(List<Terminal> Terminal);
+
+	Observable<Terminal> updateTerminal(Terminal Terminal);
+
+	List<Terminal> getAllTerminal();
+
+	Observable<Terminal> getTerminalById(long TerminalId);
+
+	void deleteTerminal(long TerminalId);
+
+	Observable<Terminal> getTerminalByCode(String code);
+}

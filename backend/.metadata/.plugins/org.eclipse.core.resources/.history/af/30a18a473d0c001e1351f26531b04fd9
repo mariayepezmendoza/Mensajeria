@@ -1,0 +1,43 @@
+/**
+ * 
+ */
+package com.maria.api.model;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
+/**
+ * @author Maria
+ *
+ */
+@Table(name = "message")
+@Entity
+@Getter
+@Setter
+@ToString
+public class Message {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+	
+	@ManyToOne
+	@JoinColumn(referencedColumnName = "id")
+	private Terminal terminal;
+	
+	@Column(name = "fecha_hora")
+	private String fechaHora;
+
+	@Column(name = "numero_tarjeta")
+	private String numeroTarjeta;
+}

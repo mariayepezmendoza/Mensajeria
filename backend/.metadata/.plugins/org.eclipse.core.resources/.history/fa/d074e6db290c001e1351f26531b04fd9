@@ -1,0 +1,8 @@
+package com.maria.api.queue.config;
+
+import org.springframework.stereotype.Component;
+
+@Component
+public class SimpleListener {
+
+}

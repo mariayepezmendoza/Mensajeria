@@ -1,0 +1,12 @@
+/**
+ * 
+ */
+package com.maria.api.queue.config;
+
+/**
+ * @author User
+ *
+ */
+public class JmsConfiguration {
+
+}
